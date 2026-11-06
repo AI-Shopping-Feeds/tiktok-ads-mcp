@@ -1,0 +1,38 @@
+# Python runtime and build artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# --- AI Shopping Feeds: credentials, local config and tool output ---
+# Never commit TikTok app secrets or access tokens.
+.env
+.env.*
+!.env.example
+secrets/
+*token*.json
+*.pem
+*.p8
+# Audit logs written by the server (may contain TikTok Ads data)
+logs/
+*.jsonl
+*.jsonl.tmp
+# Report exports, if you save any by hand
+reports/
+*.csv
+*.xlsx
+
+# Tool caches, virtual environments and OS files
+.venv/
+.venv-*/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.DS_Store
+.idea/
+.vscode/
