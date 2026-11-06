@@ -10,10 +10,11 @@ from ._common import check_ids
 BC_ASSET_TYPES = (
     "ADVERTISER",
     "CATALOG",
+    "TIKTOK_SHOP",
     "PIXEL",
-    "TIKTOK_ACCOUNT",
     "LEAD",
-    "COMMON_AUDIENCE",
+    "TT_ACCOUNT",
+    "MANAGED_BUSINESS_ACCOUNT",
 )
 
 
@@ -94,8 +95,8 @@ def register(mcp, client: TikTokAdsClient) -> None:
         filtering: dict[str, Any] | None = None,
         max_results: int = 200,
     ) -> dict[str, Any]:
-        """List assets in a Business Center: ADVERTISER (ad accounts), CATALOG, PIXEL,
-        TIKTOK_ACCOUNT, LEAD or COMMON_AUDIENCE.
+        """List assets in a Business Center: ADVERTISER (ad accounts), CATALOG, TIKTOK_SHOP,
+        PIXEL, LEAD, TT_ACCOUNT (TikTok accounts ads can run from) or MANAGED_BUSINESS_ACCOUNT.
 
         bc_id defaults to TIKTOK_ADS_BC_ID. filtering e.g. {"keyword": "shop"}.
         """

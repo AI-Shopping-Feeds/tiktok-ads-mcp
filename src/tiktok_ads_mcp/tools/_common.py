@@ -51,6 +51,12 @@ MANUAL_BID_FIELDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("bid", ("deep_cpa_bid",)),
 )
 BUDGET_FIELDS: tuple[tuple[str, tuple[str, ...]], ...] = (("budget", ("budget",)),)
+# Budget-update items may also carry min/max budgets (ad groups in CBO campaigns).
+AD_GROUP_BUDGET_FIELDS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("budget", ("budget",)),
+    ("budget", ("min_budget",)),
+    ("budget", ("max_budget",)),
+)
 
 
 def today() -> date:
@@ -342,20 +348,22 @@ def update_budgets(
             "Pass budgets=[{adgroup_id, budget}] and/or scheduled_budgets="
             "[{adgroup_id, scheduled_budget}]."
         )
-    for name, items, key in (
-        ("budgets", budgets, "budget"),
-        ("scheduled_budgets", scheduled, "scheduled_budget"),
+    for name, items, keys in (
+        ("budgets", budgets, ("budget", "min_budget", "max_budget")),
+        ("scheduled_budgets", scheduled, ("scheduled_budget",)),
     ):
         if items:
             check_items(items, name, MAX_IDS_PER_TOOL)
         for i, item in enumerate(items):
-            if not item.get("adgroup_id") or item.get(key) is None:
-                raise ValueError(f"{name}[{i}] needs adgroup_id and {key}.")
+            if not item.get("adgroup_id") or all(item.get(k) is None for k in keys):
+                raise ValueError(f"{name}[{i}] needs adgroup_id and {' or '.join(keys)}.")
     aid = client.resolve_advertiser(advertiser_id)
     ids = sorted({str(i["adgroup_id"]) for i in budgets + scheduled})
     current = client.snapshot(fetch_by_ids, client, lvl, aid, ids)
     by_id = _by_id(current, lvl.id_field)
-    changes = safety.money_changes(budgets, current, id_field="adgroup_id", fields=BUDGET_FIELDS)
+    changes = safety.money_changes(
+        budgets, current, id_field="adgroup_id", fields=AD_GROUP_BUDGET_FIELDS
+    )
     for item in scheduled:
         eid = str(item["adgroup_id"])
         old = by_id.get(eid, {}).get("budget")

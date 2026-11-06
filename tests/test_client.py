@@ -70,6 +70,8 @@ def test_allowed_advertisers_are_enforced(client: TikTokAdsClient) -> None:
     with pytest.raises(PermissionError):
         client.request("GET", "/campaign/get/", params={"advertiser_id": "999"})
     assert not route.called
+    with pytest.raises(PermissionError):
+        client.request("GET", "/report/integrated/get/", params={"advertiser_ids": [ADV, "999"]})
     client.request("GET", "/campaign/get/", params={"advertiser_id": ADV})
     assert route.called
 

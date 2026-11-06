@@ -397,6 +397,33 @@ async def test_smart_plus_ad_group_budget_rise(config: Config) -> None:
 
 
 @respx.mock
+async def test_smart_plus_cbo_ad_group_max_budget(config: Config) -> None:
+    respx.get(f"{BASE}/smart_plus/adgroup/get/").mock(
+        return_value=campaigns({"adgroup_id": "1", "max_budget": 100})
+    )
+    upd = respx.post(f"{BASE}/smart_plus/adgroup/budget/update/").mock(
+        return_value=httpx.Response(200, json=ok())
+    )
+    small = await call(
+        config,
+        "tiktok_ads_smart_plus_update_ad_group_budgets",
+        {"budgets": [{"adgroup_id": "1", "max_budget": 110}]},
+    )
+    assert "refused" not in small
+    assert body_of(upd.calls.last)["budget"] == [{"adgroup_id": "1", "max_budget": 110}]
+    big = await call(
+        config,
+        "tiktok_ads_smart_plus_update_ad_group_budgets",
+        {"budgets": [{"adgroup_id": "1", "max_budget": 300}]},
+    )
+    assert big["required_confirm"] == "APPLY"
+    empty = await call(
+        config, "tiktok_ads_smart_plus_update_ad_group_budgets", {"budgets": [{"adgroup_id": "1"}]}
+    )
+    assert "max_budget" in empty["_error"]
+
+
+@respx.mock
 async def test_smart_plus_creative_status(config: Config) -> None:
     respx.get(f"{BASE}/smart_plus/ad/get/").mock(return_value=campaigns())
     upd = respx.post(f"{BASE}/smart_plus/ad/material_status/update/").mock(

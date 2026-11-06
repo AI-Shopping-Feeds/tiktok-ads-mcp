@@ -219,8 +219,17 @@ class TikTokAdsClient:
             if isinstance(source, dict) and source.get("advertiser_id"):
                 advertiser = str(source["advertiser_id"])
                 break
-        if advertiser and self.config.allowed_advertiser_ids:
-            self.resolve_advertiser(advertiser)
+        if self.config.allowed_advertiser_ids:
+            for source in (json_body, params):
+                if not isinstance(source, dict):
+                    continue
+                listed = source.get("advertiser_ids")
+                for aid in [
+                    source.get("advertiser_id"),
+                    *(listed if isinstance(listed, list) else []),
+                ]:
+                    if aid:
+                        self.resolve_advertiser(str(aid))
 
         if is_write and self.config.dry_run:
             audit_id = self.audit.record(
